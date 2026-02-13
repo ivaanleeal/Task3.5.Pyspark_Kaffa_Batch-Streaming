@@ -2,13 +2,14 @@ from kafka import KafkaProducer
 import json
 import time
 import random
+import math
 from datetime import datetime
 
 # Configuración del sensor
-SENSOR_ID = "TEMP_001"
-LOCATION = "Laboratorio A"
-base_temp = 20.0
-start_time = datetime.now()
+SENSOR_ID = "TEMP_002"
+LOCATION = "Laboratorio B"
+base_temp = 22.0  # temperatura promedio
+TOPIC = "temperaturas"
 
 # Crear el productor Kafka
 producer = KafkaProducer(
@@ -16,14 +17,15 @@ producer = KafkaProducer(
     value_serializer=lambda v: json.dumps(v).encode('utf-8')  # convierte dict a JSON
 )
 
-TOPIC = "temperaturas"
-
 def generate_temperature():
     now = datetime.now()
-    hours_passed = (now - start_time).total_seconds() / 3600
-    trend = 0.5 * hours_passed
+    hour = now.hour + now.minute / 60
+
+    # Ciclo de 24 horas usando función seno
+    cycle = 3 * math.sin((2 * math.pi / 24) * hour)
+
     noise = random.uniform(-0.3, 0.3)
-    temperature = base_temp + trend + noise
+    temperature = base_temp + cycle + noise
 
     data = {
         "sensor_id": SENSOR_ID,
@@ -36,6 +38,4 @@ def generate_temperature():
 # Loop principal
 while True:
     message = generate_temperature()
-    producer.send(TOPIC, message)  # enviar al topic Kafka
-    print(f"Enviado a Kafka: {message}")
-    time.sleep(5)
+    producer.send(TOPIC, message)  # enviar al top
