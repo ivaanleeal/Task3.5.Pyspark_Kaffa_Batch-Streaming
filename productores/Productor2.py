@@ -1,29 +1,22 @@
+import json, time, random, math
+from datetime import datetime, timezone
 from kafka import KafkaProducer
-import time
-import random
-from datetime import datetime
 
-TOPIC = "humedades"
-
-# Serializador simple de texto
-producer = KafkaProducer(
-    bootstrap_servers='localhost:9092',
-    value_serializer=lambda v: v.encode('utf-8')
-)
-
-def generate_csv_data():
-    now = datetime.now().isoformat()
-    hum = round(random.uniform(40, 70), 2)
-    # Formato: ID, Humedad, Timestamp, Location
-    return f"HUM_001,{hum},{now},Almacen"
-
-print("📡 Empezando envío de datos CSV (Ctrl+C para parar)...")
-
-# Opcional: Enviar cabecera primero
-producer.send(TOPIC, "sensor_id,humedad,timestamp,location")
+producer = KafkaProducer(bootstrap_servers="localhost:9092",
+                         value_serializer=lambda v: json.dumps(v).encode("utf-8"))
 
 while True:
-    line = generate_csv_data()
-    producer.send(TOPIC, line)
-    print(f"📤 Enviado: {line}")
+    now = datetime.now(timezone.utc)
+    # Ciclo de 24h: el pico ocurre a las 14:00
+    hour = now.hour + now.minute/60
+    cycle = math.sin((hour - 8) * math.pi / 12) # Mínimo a las 02:00, Máximo a las 14:00
+    temp = 22.0 + (5.0 * cycle) + random.uniform(-0.3, 0.3)
+
+    data = {
+        "sensor_id": "TEMP_02",
+        "temperature": round(temp, 2),
+        "timestamp": now.isoformat(),
+        "location": "Warehouse_B"
+    }
+    producer.send("temperature-sensors", data)
     time.sleep(5)

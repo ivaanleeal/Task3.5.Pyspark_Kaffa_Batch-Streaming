@@ -1,41 +1,23 @@
+import json, time, random
+from datetime import datetime, timezone
 from kafka import KafkaProducer
-import json
-import time
-import random
-from datetime import datetime
 
-# Configuración del sensor
-SENSOR_ID = "TEMP_001"
-LOCATION = "Laboratorio A"
-base_temp = 20.0
-start_time = datetime.now()
-
-# Crear el productor Kafka
 producer = KafkaProducer(
-    bootstrap_servers='localhost:9092',
-    value_serializer=lambda v: json.dumps(v).encode('utf-8')  # convierte dict a JSON
+    bootstrap_servers="localhost:9092",
+    value_serializer=lambda v: json.dumps(v).encode("utf-8")
 )
 
-TOPIC = "temperaturas"
+start_time = time.time()
 
-def generate_temperature():
-    now = datetime.now()
-    hours_passed = (now - start_time).total_seconds() / 3600
-    trend = 0.5 * hours_passed
-    noise = random.uniform(-0.3, 0.3)
-    temperature = base_temp + trend + noise
-
-    data = {
-        "sensor_id": SENSOR_ID,
-        "temperature": round(temperature, 2),
-        "timestamp": now.isoformat(),
-        "location": LOCATION
-    }
-    return data
-
-# Loop principal
 while True:
-    message = generate_temperature()
-    producer.send(TOPIC, message)  # enviar al topic Kafka
-    print(f"Enviado a Kafka: {message}")
+    hours_passed = (time.time() - start_time) / 3600
+    temp = 20.0 + (0.5 * hours_passed) + random.uniform(-0.2, 0.2)
+    
+    data = {
+        "sensor_id": "TEMP_01",
+        "temperature": round(temp, 2),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "location": "Warehouse_A"
+    }
+    producer.send("temperature-sensors", data)
     time.sleep(5)
