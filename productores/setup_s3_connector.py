@@ -35,28 +35,26 @@ temp_config = {
 
 # 2. Humedad: JSON + Sin particiones (Mismo Bucket de tu imagen)
 hum_config = {
-    "name": "humidity-sink",
-    "config": {
-        "connector.class": "io.confluent.connect.s3.S3SinkConnector",
-        "tasks.max": "1",
-        "topics": "humidity-sensors",
-        "s3.bucket.name": "humidity-sensors",
-        "s3.region": "us-east-1",
-        "store.url": "http://minio:9000",
-        "aws.access.key.id": "minioadmin",
-        "aws.secret.access.key": "minioadmin",
-        "s3.path.style.access": "true",
-        "format.class": "io.confluent.connect.s3.format.json.JsonFormat",
-        "storage.class": "io.confluent.connect.s3.storage.S3Storage",
-        "flush.size": "1",
-        "rotate.interval.ms": "1000",
-        "key.converter": "org.apache.kafka.connect.storage.StringConverter",
-        "value.converter": "org.apache.kafka.connect.json.JsonConverter",
-        "value.converter.schemas.enable": "false",
-        "partitioner.class": "io.confluent.connect.storage.partitioner.DefaultPartitioner",
-        "schema.compatibility": "NONE"
+        "name": "humidity-sink",
+        "config": {
+            "connector.class": "io.confluent.connect.s3.S3SinkConnector",
+            "tasks.max": "1",
+            "topics": "humidity-sensors",
+            "storage.class": "io.confluent.connect.s3.storage.S3Storage",
+            "s3.bucket.name": "humidity-sensors",
+            "s3.region": "us-east-1",
+            "store.url": "http://minio:9000",
+            "format.class": "io.confluent.connect.s3.format.bytearray.ByteArrayFormat",
+            "format.bytearray.extension": ".csv",
+            "flush.size": "10",
+            "rotate.interval.ms": "60000",
+            "partitioner.class": "io.confluent.connect.storage.partitioner.DefaultPartitioner",
+            "schema.compatibility": "NONE",
+            "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+            "value.converter": "org.apache.kafka.connect.converters.ByteArrayConverter",
+            "value.converter.schemas.enable": "false",
+        },
     }
-}
 
 def setup():
     # Limpieza total de conectores previos
