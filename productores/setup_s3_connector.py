@@ -27,13 +27,13 @@ temp_config = {
         "partitioner.class": "io.confluent.connect.storage.partitioner.TimeBasedPartitioner",
         "path.format": "'year'=YYYY/'month'=MM/'day'=dd/'hour'=HH",
         "partition.duration.ms": "3600000",
-        "timezone": "Europe/Madrid",  # <--- CAMBIADO A HORA DE ESPAÑA
+        "timezone": "Europe/Madrid", 
         "timestamp.extractor": "Wallclock",
-        "locale": "es-ES"             # <--- Ajustado a local de España
+        "locale": "es-ES"           
     }
 }
 
-# 2. Humedad: JSON + Sin particiones (Mismo Bucket de tu imagen)
+# 2. Humedad: CSV + Sin particiones (Mismo Bucket de tu imagen)
 hum_config = {
         "name": "humidity-sink",
         "config": {
@@ -66,12 +66,12 @@ def setup():
     
     for config in [temp_config, hum_config]:
         name = config["name"]
-        print(f"🚀 Creando {name}...")
+        print(f"Creando {name}...")
         res = requests.post(CONNECT_URL, json=config, headers={"Content-Type": "application/json"})
         if res.status_code in [200, 201]:
-            print(f"✅ {name} listo.")
+            print(f"{name} listo.")
         else:
-            print(f"❌ Error en {name}: {res.text}")
+            print(f"Error en {name}: {res.text}")
 
 if __name__ == "__main__":
     setup()
